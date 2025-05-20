@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我们的3D情侣相册</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 新增：全局美化背景，可替换为渐变或背景图 -->
+    <script src="audio-player.js" defer></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* 背景渐变：从深紫到粉色的线性渐变 */
+
+            background: url('images/photo1.jpg') no-repeat center center fixed;
+            background-size: cover;
+
+
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            /* 若想使用背景图，可替换上面渐变为以下示例：
+               background: url('images/bg.jpg') no-repeat center center fixed;
+               background-size: cover;
+            */
+            body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+        }
+
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0f1011;
+            font-size: 32px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 容器宽高适当缩小，避免照片占据整屏 */
+        #drag-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            /* 视距：加大视距数值，可使层次感更明显（数值越大则透视效果更弱） */
+            transform: translate(-50%, -50%) perspective(1200px);
+            width: 700px; /* 原示例为800px，此处缩小宽度 */
+            height: 500px; /* 原示例为600px，此处缩小高度 */
+            cursor: grab;
+        }
+
+        #drag-container:active {
+            cursor: grabbing;
+        }
+
+        #spin-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d; /* 保持子元素的 3D 效果 */
+            animation: spin 30s linear infinite; /* 自动恒速旋转 */
+        }
+
+        /* 标准旋转关键帧，从 0° 到 360° */
+        @keyframes spin {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+
+        /* 缩小图片尺寸：宽度 200px，高度 280px；
+           同时调整 translateZ 深度为 450px，以保证层次感 */
+        #spin-container img {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 200px; /* 原示例 250px，此处减小 */
+            height: 280px; /* 原示例 350px，此处减小 */
+            transform-origin: 0 0 0;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 鼠标悬停时图片放大并拉近，增强层次感 */
+        #spin-container img:hover {
+            transform: scale(1.15) translateZ(100px) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body>
+<!-- 音频元素：与 index.html 保持严格一致 -->
+<audio id="bgm-audio" autoplay muted preload="auto">
+    <source src="yinyue.m4a" type="audio/mp4">
+    <source src="yinyue.mp3" type="audio/mpeg">
+    您的浏览器不支持音频播放，请升级或使用其他浏览器。
+</audio>
+<h1>我们的3D情侣相册</h1>
+<div id="drag-container">
+    <div id="spin-container">
+        <!-- 20 张情侣照片示例，路径可根据项目实际修改 -->
+        <img src="images/photo1.jpg" alt="情侣照1">
+        <img src="images/photo2.jpg" alt="情侣照2">
+        <img src="images/photo3.jpg" alt="情侣照3">
+        <img src="images/photo4.jpg" alt="情侣照4">
+        <img src="images/photo5.jpg" alt="情侣照5">
+        <img src="images/photo6.jpg" alt="情侣照6">
+        <img src="images/photo7.jpg" alt="情侣照7">
+        <img src="images/photo8.jpg" alt="情侣照8">
+        <img src="images/photo9.jpg" alt="情侣照9">
+        <img src="images/photo10.jpg" alt="情侣照10">
+        <img src="images/photo11.jpg" alt="情侣照11">
+        <img src="images/photo12.jpg" alt="情侣照12">
+        <img src="images/photo13.jpg" alt="情侣照13">
+        <img src="images/photo14.jpg" alt="情侣照14">
+        <img src="images/photo15.jpg" alt="情侣照15">
+        <img src="images/photo16.jpg" alt="情侣照16">
+        <img src="images/photo17.jpg" alt="情侣照17">
+        <img src="images/photo18.jpg" alt="情侣照18">
+        <img src="images/photo19.jpg" alt="情侣照19">
+        <img src="images/photo20.jpg" alt="情侣照20">
+    </div>
+</div>
+
+<script>
+    (function () {
+        var dragContainer = document.getElementById('drag-container');
+        var spinContainer = document.getElementById('spin-container');
+        var imgs = spinContainer.getElementsByTagName('img');
+        var imgCount = imgs.length;
+        var angle = 360 / imgCount;
+        var currYAngle = 0, currXAngle = 0;
+        var isDragging = false, lastMouseX, lastMouseY;
+        // 初始化：将每张图片均匀分布在圆周上，深度为 450px
+        for (var i = 0; i < imgCount; i++) {
+            var theta = angle * i;
+            imgs[i].style.transform = 'rotateY(' + theta + 'deg) translateZ(450px)';
+            // translateZ 使用 450px（原示例为 500px），使层次感依然明显但图片更偏近中心
+        }
+        // 鼠标按下：停止自动旋转
+        dragContainer.onmousedown = function (e) {
+            clearInterval(autoRotate);
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        };
+        // 鼠标移动：更新旋转角度
+        document.onmousemove = function (e) {
+            if (!isDragging) return;
+            var deltaX = e.clientX - lastMouseX;
+            var deltaY = e.clientY - lastMouseY;
+            currYAngle += deltaX * 0.1;
+            currXAngle -= deltaY * 0.1;
+            spinContainer.style.transform = 'rotateX(' + currXAngle + 'deg) rotateY(' + currYAngle + 'deg)';
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        };
+        // 鼠标松开：恢复自动旋转
+        document.onmouseup = function () {
+            isDragging = false;
+            autoRotate = setInterval(function () {
+                currYAngle += 0.3;
+                spinContainer.style.transform = 'rotateY(' + currYAngle + 'deg)';
+            }, 30);
+        };
+        // 自动旋转逻辑
+        var autoRotate = setInterval(function () {
+            currYAngle += 0.3;
+            spinContainer.style.transform = 'rotateY(' + currYAngle + 'deg)';
+        }, 30);
+    })();
+</script>
+</body>
+</html>
